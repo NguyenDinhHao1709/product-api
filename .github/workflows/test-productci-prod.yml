@@ -1,4 +1,4 @@
-name: Test Product CI Prod
+name: Test Product CI Prod & CD
 
 on:
   push:
@@ -44,3 +44,30 @@ jobs:
           sleep 4
           node test.js
           kill $SERVER_PID
+
+  deploy-dockerhub:
+    name: Build & Push to Docker Hub
+    needs: test-prod
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: actions/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/product-api:latest
+
