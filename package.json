@@ -1,0 +1,15 @@
+{
+  "name": "product-api",
+  "version": "1.0.0",
+  "description": "Product RESTful API with MongoDB and Mongoose",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.9.5"
+  }
+}
