@@ -1,0 +1,46 @@
+name: Test Product CI Prod
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-prod:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Integration & CRUD Tests against MongoDB
+        env:
+          PORT: 3000
+          MONGO_URI: mongodb://localhost:27017/product_db
+        run: |
+          node server.js &
+          SERVER_PID=$!
+          sleep 4
+          node test.js
+          kill $SERVER_PID
